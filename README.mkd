@@ -1,0 +1,36 @@
+
+# Ruby LetsEncrypt Route53 Update tool
+
+This is a tool I wrote for a personal project, but isn't really useful as a gem
+on its own. In fact, you probably shouldn't use this code verbatim, but feel
+free to fork/copy and make changes you need.
+
+See `letsencrypt.example.rake` for an example of how this could be used. You
+could also wrap the same functionality in an ActiveJob and kick it off with
+cron or the clockwork gem.
+
+## `ssl_checker.rb`
+
+Use this to determine if your certificate is nearing expiration. Example usage:
+
+```ruby
+if SslChecker.new(host: "www.github.com").expires_in < 30.days
+  update_certificate!
+end
+```
+
+## `lets_encrypt_route53.rb`
+
+This provides several helper methods, each of which are lightly documented
+inline. There's also a main "meta-method", `refresh_certificate!`, which
+performs all the steps needed to update a certificate on S3.
+
+### Notes:
+
+ * Looks for an existing encrypted key in the provided S3 bucket.
+ * If none exists, will generate a new private key, encrypt it with an AWS Key
+   Management Service (KMS) key, and upload it to S3. You're responsible for
+   creating the KMS key yourself, and providing the `kms_key_id` value.
+ * Defaults to using the Lets Encrypt sandbox. To switch it to production, set
+   `endpoint` to `LetsEncryptRoute53::PRODUCTION`
+
