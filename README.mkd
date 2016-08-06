@@ -34,3 +34,79 @@ performs all the steps needed to update a certificate on S3.
  * Defaults to using the Lets Encrypt sandbox. To switch it to production, set
    `endpoint` to `LetsEncryptRoute53::PRODUCTION`
 
+### Sample IAM Policy
+
+Here's a policy I have verified works, but I'm sure it can be locked down
+further, if you desire. You'll need to substitute in your own ARN values.
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "Stmt1470452088000",
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetObject"
+            ],
+            "Resource": [
+                "*"
+            ]
+        },
+        {
+            "Sid": "Stmt1470452271000",
+            "Effect": "Allow",
+            "Action": [
+                "kms:Decrypt",
+                "kms:Encrypt"
+            ],
+            "Resource": [
+                "arn:aws:kms:{region}:{acct}:key/{key-uuid}"
+            ]
+        },
+        {
+            "Sid": "Stmt1470452313000",
+            "Effect": "Allow",
+            "Action": [
+                "route53:ChangeResourceRecordSets"
+            ],
+            "Resource": [
+                "arn:aws:route53:::hostedzone/{hosted-zone-id}"
+            ]
+        },
+        {
+            "Sid": "Stmt1470452313001",
+            "Effect": "Allow",
+            "Action": [
+                "route53:GetChange"
+            ],
+            "Resource": [
+                "arn:aws:route53:::change/*"
+            ]
+        },
+        {
+            "Sid": "Stmt1470452548000",
+            "Effect": "Allow",
+            "Action": [
+                "iam:DeleteServerCertificate",
+                "iam:ListServerCertificates",
+                "iam:UploadServerCertificate"
+            ],
+            "Resource": [
+                "*"
+            ]
+        },
+        {
+            "Sid": "Stmt1470452636000",
+            "Effect": "Allow",
+            "Action": [
+                "elasticloadbalancing:SetLoadBalancerListenerSSLCertificate"
+            ],
+            "Resource": [
+                "arn:aws:elasticloadbalancing:{region}:{acct}:loadbalancer/{lb-name}"
+            ]
+        }
+    ]
+}
+```
+
